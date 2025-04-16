@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Drowsiness Dashboard</title>
+    <style>
+        body {
+            background: url("/static/bg.jpg") no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            animation: fadeIn 1.2s ease-in;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.95);
+            overflow-x: hidden;
+            transition: 0.4s;
+            padding-top: 60px;
+        }
+
+        .sidebar a {
+            padding: 12px 30px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #f1f1f1;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .closebtn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 36px;
+            color: white;
+        }
+
+        .menu-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 8px 12px;
+            border-radius: 6px;
+            z-index: 1100;
+        }
+
+        .dashboard-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .status, .alert-msg, .yawn-count, #video-container {
+            display: none;
+        }
+
+        .status span {
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: white;
+        }
+
+        .Normal {
+            background-color: #4CAF50;
+        }
+
+        .Drowsy {
+            background-color: #E74C3C;
+        }
+
+        .Yawning {
+            background-color: #E67E22;
+        }
+
+        img {
+            margin-top: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+        }
+
+        .logout-btn {
+            display: inline-block;
+            margin-top: 25px;
+            text-decoration: none;
+            background-color: #4A90E2;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #357ABD;
+        }
+
+        #home-message {
+            font-size: 20px;
+            color: #555;
+            margin-top: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hamburger Menu Button -->
+    <div class="menu-btn" onclick="openSidebar()">&#9776;</div>
+
+    <!-- Sidebar -->
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeSidebar()">&times;</a>
+        <a href="javascript:void(0)" onclick="showHome()">🏠 Home</a>
+        <a href="javascript:void(0)" onclick="showDriver('driver1')">Driver 1</a>
+        <a href="#">Driver 2</a>
+        <a href="#">Driver 3</a>
+        <a href="#">+ Add Driver</a>
+    </div>
+
+    <div class="dashboard-container">
+        <h1>Drowsiness Monitoring System</h1>
+
+        <div id="home-message">Select a driver from the sidebar to start monitoring.</div>
+
+        <div class="status" id="status-box">
+            Status:
+            <span id="status" class="Normal">Normal</span>
+        </div>
+
+        <div class="alert-msg" id="alert-message">No alerts</div>
+        <div class="yawn-count">Yawn Count: <span id="yawn-count">0</span></div>
+
+        <div id="video-container">
+            <img id="video-feed" width="640" height="480" alt="Live Feed">
+        </div>
+
+        <a class="logout-btn" href="{{ url_for('logout') }}">Logout</a>
+    </div>
+
+    <script>
+        function openSidebar() {
+            document.getElementById("mySidebar").style.width = "250px";
+        }
+
+        function closeSidebar() {
+            document.getElementById("mySidebar").style.width = "0";
+        }
+
+        function showHome() {
+            document.getElementById("home-message").style.display = "block";
+            document.getElementById("status-box").style.display = "none";
+            document.getElementById("alert-message").style.display = "none";
+            document.getElementById("yawn-count").style.display = "none";
+            document.getElementById("video-container").style.display = "none";
+            document.getElementById("video-feed").src = "";
+            closeSidebar();
+        }
+
+        function showDriver(driver) {
+            document.getElementById("home-message").style.display = "none";
+            document.getElementById("status-box").style.display = "block";
+            document.getElementById("alert-message").style.display = "block";
+            document.getElementById("yawn-count").style.display = "block";
+            document.getElementById("video-container").style.display = "block";
+
+            const videoFeed = document.getElementById("video-feed");
+            if (!videoFeed.src || driver === 'driver1') {
+                videoFeed.src = "{{ url_for('video_feed') }}";
+            }
+
+            closeSidebar();
+        }
+
+        async function fetchStatus() {
+            try {
+                const response = await fetch("/status");
+                const data = await response.json();
+
+                const statusSpan = document.getElementById("status");
+                const alertBox = document.getElementById("alert-message");
+                const yawnSpan = document.getElementById("yawn-count");
+
+                statusSpan.textContent = data.status;
+                statusSpan.className = data.status;
+                alertBox.textContent = data.alert || "No alerts";
+                yawnSpan.textContent = data.yawns;
+            } catch (err) {
+                console.error("Error fetching status:", err);
+            }
+        }
+
+        setInterval(fetchStatus, 1000);
+        fetchStatus();
+    </script>
+</body>
+</html>
